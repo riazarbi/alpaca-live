@@ -2,7 +2,7 @@
 library(rblncr)
 
 # Set parameters from ENV variables ----
-trading_mode = "paper"
+trading_mode = "live"
 alpaca_paper_key <- Sys.getenv("ALPACA_PAPER_KEY")
 alpaca_paper_secret <- Sys.getenv("ALPACA_PAPER_SECRET")
 
@@ -11,8 +11,8 @@ alpaca_live_secret <- Sys.getenv("ALPACA_LIVE_SECRET")
 
 # Create backend connections -----
 t_conn <- alpaca_connect(trading_mode,
-                         alpaca_paper_key,
-                         alpaca_paper_secret)
+                         alpaca_live_key,
+                         alpaca_live_secret)
 d_conn <- alpaca_connect("data",
                          alpaca_live_key,
                          alpaca_live_secret)
@@ -54,7 +54,7 @@ if(still_cooldown) {
                                  pricing_spread_tolerance = 0.01,
                                  pricing_overrides = NULL,
                                  trader_life = 30,
-                                 buy_only = FALSE,
+                                 buy_only = TRUE,
                                  resubmit_interval = 5,
                                  verbose = TRUE)
     # Record drift change
