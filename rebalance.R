@@ -3,9 +3,6 @@ library(rblncr)
 
 # Set parameters from ENV variables ----
 trading_mode = "live"
-alpaca_paper_key <- Sys.getenv("ALPACA_PAPER_KEY")
-alpaca_paper_secret <- Sys.getenv("ALPACA_PAPER_SECRET")
-
 alpaca_live_key <- Sys.getenv("ALPACA_LIVE_KEY")
 alpaca_live_secret <- Sys.getenv("ALPACA_LIVE_SECRET")
 
