@@ -5,8 +5,6 @@ cash:
 assets:
 - symbol: VT
   percent: 98
-- symbol: BRK.B
-  percent: 0
 tolerance:
   percent: 2
 cooldown:
