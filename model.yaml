@@ -8,6 +8,6 @@ assets:
 tolerance:
   percent: 2
 cooldown:
-  days: 30
+  days: 7
 created_at: 2025-03-26T11:22:01
 updated_at: 2025-03-26T11:22:01

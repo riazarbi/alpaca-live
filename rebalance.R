@@ -30,66 +30,37 @@ if(file.exists(rebalance_dates_file)) {
 # Check cooldown period ----
 still_cooldown <- !(cooldown_elapsed(last_rebalance, portfolio_model$cooldown$days))
 
-# Balance portfolio (if cooldown elapsed) ----
+# Submit trades (if cooldown elapsed) ----
 if(still_cooldown) {
   message("Cooldown period still in force.")
 } else {
 
-  balanced <- FALSE
+# Get current portfolio 
+  get_portfolio_current(t_conn) |>
+# Load targets
+    load_portfolio_targets(portfolio_model) |>
+# Price it
+    price_portfolio(connection = d_conn, price_type = 'close') |>
+# Solve
+    solve_portfolio() |>
+# Constrain to just a small amount
+# We are following a dollar cost averaging strategy
+    constrain_orders(
+      connection = d_conn,
+      min_order_size = 100,
+      max_order_size = 1000,
+      buy_only = TRUE) |>  
+# Trade on the constrained orders
+    trader(trader_life = 300,
+           resubmit_interval = 30,
+           trading_connection = t_conn,
+           pricing_connection = d_conn,
+           pricing_spread_tolerance = 0.01,
+           exit_if_market_closed = TRUE,
+           verbose = TRUE)
   
-  i <- 1
-  attempts <- list()
-
-  while(!balanced) {
-
-  attempt <- balance_portfolio(portfolio_model = portfolio_model,
-                                 trading_connection = t_conn,
-                                 pricing_connection = d_conn,
-                                 min_order_size = 100,
-                                 max_order_size = 10000,
-                                 daily_vol_pct_limit = 0.02,
-                                 pricing_spread_tolerance = 0.01,
-                                 pricing_overrides = NULL,
-                                 trader_life = 30,
-                                 buy_only = TRUE,
-                                 resubmit_interval = 5,
-                                 verbose = TRUE)
-    # Record drift change
-    # (We assume you can get the order log from your broker. Else save those as well.)
-    current_timestamp <- lubridate::now()
-    attempt$drift |>
-      dplyr::mutate(timestamp = current_timestamp) |>
-      dplyr::relocate(timestamp, .before = symbol) |>
-      readr::write_csv(file = "drift_changes.csv", append = TRUE)
-
-    balanced <- attempt$portfolio_balanced
-
-    attempts[[i]] <- attempt
-    i <- i + 1
-
-  }
-
-
-
   # Record rebalance date for cooldown tracking
   current_timestamp <- lubridate::now()
   nowtext <-  strftime(current_timestamp,"%Y-%m-%d %H:%M:%S")
   write(nowtext, rebalance_dates_file, append = TRUE)
-
-  # Record current portfolio percentages
-  current_balances <- get_portfolio_current(t_conn) |>
-    load_portfolio_targets(portfolio_model) |>
-    price_portfolio(d_conn)
-  current_balances$cash |>
-    dplyr::rename(symbol = currency) |>
-    dplyr::bind_rows(current_balances$assets) |>
-    dplyr::mutate(timestamp = current_timestamp) |>
-    dplyr::select(timestamp, symbol, percent_target, percent_held) |>
-    tidyr::pivot_longer(cols = c(percent_target, percent_held),
-                 names_prefix = "percent_",
-                 names_to = "type",
-                 values_to = "percent") |>
-    readr::write_csv(file = "percent_holdings.csv", append = TRUE)
-
-
 }
