@@ -1,17 +1,42 @@
 # rblncr-demo
-Demonstration of how to use [rblncr](https://github.com/riazarbi/rblncr) with GitHub Actions. 
 
-To tinker, launch in binder.
+## Setup
 
-RStudio: [![RStudio](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/riazarbi/rblncr-demo/HEAD)
-Shiny: [![Shiny](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/riazarbi/rblncr-demo/HEAD?urlpath=shiny/shiny/)
+To set up on a fresh machine:
 
-## Usage
+```
+sudo apt -y install r-base cmake libcurl4-openssl-dev libssl-dev
+sudo Rscript -e "install.packages('renv')"
+```
 
-This demo will rebalance your Alpaca paper account holdings to approximate the portfolio weights specified in the `model.yaml` file. 
+```R
+renv::init()
+quit()
+```
 
-You can fork this repo and try it out with your own Alpaca account. You'll need to add the repository secrets listed in the workflow file to your own repo. Make sure your actions are enabled, and then run the workflow.
+```R
+options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"])))
+options(repos="https://packagemanager.rstudio.com/all/__linux__/noble/latest")
+source("https://docs.posit.co/rspm/admin/check-user-agent.R")
+Sys.setenv("NOT_CRAN" = TRUE)
 
-## Disclaimer
+packages <- c("arrow",
+              "tidyr",
+              "readr",
+              "shiny",
+              "remotes")
 
-**NOTE: I offer no guarantee whatsoever that this code works as intended.**
+renv::install(packages)
+
+renv::install("riazarbi/rblncr@*release")
+```
+
+## Using github action
+
+The github action should work fine. Just make suure you've enabels actions in the repo and added the required secrets. 
+
+These are:
+
+- ALPACA_LIVE_KEY
+- ALPACA_LIVE_SECRET
+- GH_PAT (for R package installer to work correctly)
