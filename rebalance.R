@@ -48,7 +48,7 @@ if(still_cooldown) {
     constrain_orders(
       connection = d_conn,
       min_order_size = 100,
-      max_order_size = 1000,
+      max_order_size = 2000,
       buy_only = TRUE) |>  
 # Trade on the constrained orders
     trader(trader_life = 300,
